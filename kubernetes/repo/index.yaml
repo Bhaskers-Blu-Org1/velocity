@@ -1,0 +1,12 @@
+apiVersion: v1
+entries:
+  velocity:
+  - apiVersion: v1
+    created: 2018-03-09T11:30:13.934141-05:00
+    description: Deploys UrbanCode Velocity
+    digest: 64467d05b27aef9584927c90e54508b88a5467f191f77d930e039afbf0474284
+    name: velocity
+    urls:
+    - https://raw.githubusercontent.com/IBM/velocity/master/kubernetes/repo/velocity-0.10.0.tgz
+    version: 0.10.0
+generated: 2018-03-09T11:30:13.933576-05:00

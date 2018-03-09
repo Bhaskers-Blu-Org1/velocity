@@ -1,0 +1,39 @@
+version: '2'
+services:
+  consumer:
+    image: skalmadka/consumer:latest
+    ports:
+      - "6004:6004"
+    links:
+      - database
+    environment:
+      - MONGO_URL=mongodb://database:27017/meteor
+      - ENCRYPT_KEY=${ENCRYPT_KEY}
+      - CONSUMER_URL=http://${URL_DOMAIN}:6004
+  ui:
+    image: skalmadka/ui:latest
+    ports:
+      - "80:80"
+    links:
+      - database
+    environment:
+      # ROOT_URL, the URL users will be accessing the UI with.
+      - ROOT_URL=http://${URL_DOMAIN}
+      # DDP_DEFAULT_CONNECTION_URL same as ROOT_URL
+      - DDP_DEFAULT_CONNECTION_URL=http://${URL_DOMAIN}
+      - MONGO_URL=mongodb://database:27017/meteor
+      - ENCRYPT_KEY=${ENCRYPT_KEY}
+      - ADMIN_PASSWORD=admin
+      - LICENSE_KEY=${LICENSE_KEY}
+  database:
+    image:  mongo:3.2
+    command: mongod --quiet --logpath=/dev/null
+    volumes:
+      - mongodb:/data/db
+    # Expose mongo port only for debugging or if you want to browse using robomongo
+    # ports:
+    #   - "27017:27017"
+volumes:
+  mongodb:
+    external:
+      name: velocity-mongo
