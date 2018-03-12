@@ -1,7 +1,7 @@
 version: '2'
 services:
   consumer:
-    image: skalmadka/consumer:latest
+    image: ibmcom/velocity-consumer:latest
     ports:
       - "6004:6004"
     links:
@@ -11,7 +11,7 @@ services:
       - ENCRYPT_KEY=${ENCRYPT_KEY}
       - CONSUMER_URL=http://${URL_DOMAIN}:6004
   ui:
-    image: skalmadka/ui:latest
+    image: ibmcom/velocity-ui:latest
     ports:
       - "80:80"
     links:
