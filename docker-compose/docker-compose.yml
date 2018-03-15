@@ -25,6 +25,10 @@ services:
       - ENCRYPT_KEY=${ENCRYPT_KEY}
       - ADMIN_PASSWORD=admin
       - LICENSE_KEY=${LICENSE_KEY}
+<<<<<<< HEAD
+=======
+      - COMPOSE_VERSION=1.0.0.1
+>>>>>>> 0005b00efa84ce63ad48e27d822e683b8ba98234
   database:
     image:  mongo:3.2
     command: mongod --quiet --logpath=/dev/null
