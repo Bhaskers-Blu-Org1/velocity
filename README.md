@@ -1,6 +1,6 @@
 ## IBM UrbanCode Velocity Version 1.0.0 Community Edition
 
-IBM UrbanCode Velocity Community Edition helps your software innovation teams deliver faster and better by providing insights into their effectiveness. Velocity reveals key performance indicators (KPIs) so that product teams can track their performance and improvements, and centralized DevOps support teams can track improvements throughout the enterprise.
+IBM UrbanCode Velocity Community Edition helps your software innovation teams deliver faster and better by providing insights into their effectiveness. Velocity reveals key performance indicators (KPIs) so that product teams can track their performance and improvements, and centralized DevOps support teams can track improvements throughout the enterprise. You can install IBM UrbanCode Velocity on your local computer into a Kubernetes or Docker container management system.
 
 Product details are located in the product documentation at <https://www.ibm.com/support/knowledgecenter/SSCKX6_1.0.0/com.ibm.uvelocity.doc/ucv_version_welcome.html>
 The product can be installed and is ready to use after you complete these tasks:
