@@ -21,9 +21,9 @@ services:
       - database
     environment:
       # ROOT_URL, the URL users will be accessing the UI with.
-      - ROOT_URL=https://${URL_DOMAIN}:443
+      - ROOT_URL=https://${URL_DOMAIN}
       # DDP_DEFAULT_CONNECTION_URL same as ROOT_URL
-      - DDP_DEFAULT_CONNECTION_URL=https://${URL_DOMAIN}:443
+      - DDP_DEFAULT_CONNECTION_URL=https://${URL_DOMAIN}
       - MONGO_URL=mongodb://database:27017/meteor
       - ENCRYPT_KEY=${ENCRYPT_KEY}
       - ADMIN_PASSWORD=admin
@@ -31,6 +31,8 @@ services:
       - COMPOSE_VERSION=1.0.0
       # Logging level. Possible values, all < debug < info < warn < error < fatal < off
       - LOG_LEVEL=error
+      # If DISABLE_SSL is set to true ROOT_URL and DDP_DEFAULT_CONNECTION_URL should use http
+      - DISABLE_SSL=false
   database:
     image:  mongo:3.2
     command: mongod --quiet --logpath=/dev/null
