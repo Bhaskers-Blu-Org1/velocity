@@ -1,0 +1,246 @@
+apiVersion: v1
+kind: Template
+metadata:
+  creationTimestamp: null
+  name: velocity-ce
+objects:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: velocity-consumer
+      chart: velocity-1.0.0
+      heritage: Tiller
+      release: ${VELOCITY_NAME}
+    name: "velocity-consumer-${VELOCITY_NAME}"
+  spec:
+    externalTrafficPolicy: Cluster
+    ports:
+    - name: consumer-port
+      port: 6004
+      protocol: TCP
+      targetPort: 6004
+    selector:
+      app: velocity-consumer
+      release: ${VELOCITY_NAME}
+    sessionAffinity: None
+    type: NodePort
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: velocity-ui
+      chart: velocity-1.0.0
+      heritage: Tiller
+      release: ${VELOCITY_NAME}
+    name: "velocity-ui-${VELOCITY_NAME}"
+  spec:
+    externalTrafficPolicy: Cluster
+    ports:
+    - name: ui-port
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    selector:
+      app: velocity-ui
+      release: ${VELOCITY_NAME}
+    sessionAffinity: None
+    type: NodePort
+  status:
+    loadBalancer: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+    creationTimestamp: null
+    generation: 1
+    labels:
+      app: velocity-consumer
+      chart: velocity-1.0.0
+      heritage: Tiller
+      release: ${VELOCITY_NAME}
+    name: "velocity-consumer-${VELOCITY_NAME}"
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: velocity-consumer
+        release: ${VELOCITY_NAME}
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: velocity-consumer
+          release: ${VELOCITY_NAME}
+      spec:
+        containers:
+        - env:
+          - name: MONGO_URL
+            value: ${MONGO_URL}
+          - name: ENCRYPT_KEY
+            value: ${ENCRYPT_KEY}
+          - name: CONSUMER_URL
+            value: "http://${HOSTNAME}/velocity-consumer"
+          - name: HELM_VERSION
+            value: 1.0.0
+          - name: LOG_LEVEL
+            value: error
+          image: ibmcom/velocity-consumer:latest
+          imagePullPolicy: Always
+          name: consumer
+          ports:
+          - containerPort: 6004
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+    creationTimestamp: null
+    generation: 1
+    labels:
+      app: velocity-ui
+      chart: velocity-1.0.0
+      heritage: Tiller
+      release: ${VELOCITY_NAME}
+    name: "velocity-ui-${VELOCITY_NAME}"
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: velocity-ui
+        release: "${VELOCITY_NAME}"
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 1
+      type: RollingUpdate
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: velocity-ui
+          release: "${VELOCITY_NAME}"
+      spec:
+        containers:
+        - env:
+          - name: ROOT_URL
+            value: "http://${HOSTNAME}/velocity"
+          - name: PORT
+            value: "8080"
+          - name: SSLPORT
+            value: "443"
+          - name: DISABLE_SSL
+            value: "true"
+          - name: DDP_DEFAULT_CONNECTION_URL
+            value: "http://${HOSTNAME}/velocity"
+          - name: MONGO_URL
+            value: "${MONGO_URL}"
+          - name: ENCRYPT_KEY
+            value: ${ENCRYPT_KEY}
+          - name: ADMIN_PASSWORD
+            value: admin
+          - name: HELM_VERSION
+            value: 1.0.0
+          - name: ACCESS_KEY
+            value: ${ACCESS_KEY}
+          - name: LOG_LEVEL
+            value: error
+          image: ibmcom/velocity-ui:latest
+          imagePullPolicy: Always
+          name: velocity-ui
+          ports:
+          - containerPort: 8080
+            protocol: TCP
+          - containerPort: 443
+            protocol: TCP
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+- apiVersion: v1
+  kind: Route
+  metadata:
+    annotations:
+      ingress.kubernetes.io/rewrite-target: /
+      kubernetes.io/ingress.class: nginx
+    creationTimestamp: null
+    labels:
+      app: velocity-ingress-ui
+      chart: velocity-1.0.0
+      heritage: Tiller
+      release: ${VELOCITY_NAME}
+    name: "velocity-route-${VELOCITY_NAME}"
+    ownerReferences:
+    - apiVersion: extensions/v1beta1
+      controller: true
+      kind: Ingress
+      name: velocity-ingress-ui
+      uid: 777285cc-b2e2-11e8-954f-08002711ef57
+  spec:
+    host: "${HOSTNAME}"
+    path: /velocity/
+    port:
+      targetPort: 8080
+    to:
+      kind: Service
+      name: "velocity-ui-${VELOCITY_NAME}"
+      weight: 100
+    wildcardPolicy: None
+  status:
+    ingress:
+    - conditions:
+      - lastTransitionTime: 2018-09-07T21:10:37Z
+        status: "True"
+        type: Admitted
+      host: "${HOSTNAME}"
+      routerName: router
+      wildcardPolicy: None
+parameters:
+  - name: VELOCITY_NAME
+    description: "A name for this instance of Velocity"
+    required: true
+    displayName: "Velocity Instance Name"
+  - name: HOSTNAME
+    description: "The hostname used for the route used for this Velocity Instance"
+    required: false
+    displayName: "Hostname"
+  - name: ACCESS_KEY
+    description: "A generated encryption key"
+    required: true
+    displayName: "Access Key"
+  - name: MONGO_URL
+    description: "A name for this instance of Velocity (mongodb://user:pass@mongo-host:33202/velocity)"
+    required: true
+    displayName: "Mongo URL"
+  - name: ENCRYPT_KEY
+    description: "A generated encryption key"
+    from: '[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}'
+    generate: expression
+    displayName: "Encryption Key"
